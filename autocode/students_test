@@ -2,6 +2,10 @@ package coverage
 
 import (
 	"os"
+	"sort"
+	"strings"
+	"testing"
+	"time"
 )
 
 // DO NOT EDIT THIS FUNCTION
@@ -18,3 +22,89 @@ func init() {
 
 // WRITE YOUR CODE BELOW
 
+func Test_People(t *testing.T) {
+	personSlice := People{
+		{"Petr", "Petrov", time.Date(1974, time.Month(2), 2, 1, 10, 30, 0, time.UTC)},
+		{"Sidor", "Sidorov", time.Date(1972, time.Month(3), 21, 1, 10, 30, 0, time.UTC)},
+		{"Ivan", "Jmyakin", time.Date(1976, time.Month(1), 1, 1, 10, 30, 0, time.UTC)},
+		{"Ivan", "Smektov", time.Date(1976, time.Month(1), 1, 1, 10, 30, 0, time.UTC)},
+		{"Nikolay", "Ivanov", time.Date(1976, time.Month(1), 1, 1, 10, 30, 0, time.UTC)},
+	}
+	sort.Sort(personSlice)
+	var result strings.Builder
+	for _, v := range personSlice {
+		result.WriteString(v.lastName)
+	}
+	expected := "JmyakinSmektovIvanovPetrovSidorov"
+	if result.String() != expected {
+		t.Errorf("expected: %s, got %s", expected, result.String())
+	}
+}
+
+func Test_Valid_Matrix(t *testing.T) {
+
+	matrix, error := New(`1 2 3 4 5 6 7 8
+                          7 2 6 2 5 3 0 3
+                          6 7 3 5 3 7 8 2
+                          5 5 3 1 1 4 5 6
+                          8 9 5 7 4 5 3 6`)
+	if error != nil {
+		t.Errorf("Error happend: %s", error.Error())
+	}
+	matrix.Rows()
+	matrix.Cols()
+
+	rowAttempt := 2
+	colAttempt := 3
+	setResult := matrix.Set(rowAttempt, colAttempt, 8)
+
+	if !setResult {
+		t.Errorf("Invalid set input data. Matrix has %d rows and %d colums, but tried set value on row %d, column %d",
+			matrix.rows, matrix.cols, rowAttempt, colAttempt)
+	}
+}
+
+func Test_Invalid_Matrix_Model(t *testing.T) {
+
+	_, error := New(`1 2 3 4 5 6 7 8
+                         7 2 6 2 5 
+                         6 7 3 5 3 7 8 2
+                         5 5 3 1 1 4 5 6
+                         8 9 5 7 4 5 3 6`)
+	expectedError := "Rows need to be the same length"
+	if error == nil {
+		t.Errorf("Expected Error but was nil")
+	} else if error.Error() != expectedError {
+		t.Errorf("expected error: %s, got error: %s", expectedError, error.Error())
+	}
+}
+
+func Test_Invalid_Matrix_Content(t *testing.T) {
+
+	_, error := New(`1 2 3 4 5 6 7 8
+                         7 2 6 2 5 a b c
+                         6 7 3 5 3 7 8 2
+                         5 5 3 1 1 4 5 6
+                         8 9 5 7 4 5 3 6`)
+	expectedError := "strconv.Atoi: parsing \"a\": invalid syntax"
+	if error == nil {
+		t.Errorf("Expected Error but was nil")
+	} else if error.Error() != expectedError {
+		t.Errorf("expected error: %s, got error: %s", expectedError, error.Error())
+	}
+}
+
+func Test_Matrix_Invalid_Set(t *testing.T) {
+
+	matrix, _ := New(`1 2 3 4 5 6 7 8
+                          7 2 6 2 5 3 0 3
+                          6 7 3 5 3 7 8 2
+                          5 5 3 1 1 4 5 6
+                          8 9 5 7 4 5 3 6`)
+	matrix.Rows()
+	matrix.Cols()
+	setResult := matrix.Set(20, 3, 8)
+	if setResult {
+		t.Errorf("Expected false in matrix.Set() result, but was true")
+	}
+}
